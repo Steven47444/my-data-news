@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第三页</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="icon" href="favicon.ico">
+    <style>
+        body {
+            font-size: 1.2rem; /* 使用rem单位，避免像素放大影响页面布局 */
+            margin: 0;
+            padding: 0;
+            background-image: url('background.png');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            flex-direction: column;
+            position: relative;
+            gap: 10px;
+            padding-top: 20px; /* 留出顶部空白 */
+        }
+
+        .text-content {
+            font-size: 1.8rem; /* 设置文字的字体大小，可以根据需要调整 */
+            padding-left: 60px;  /* 设置左右页边距 */
+            padding-right: 100px;
+            line-height: 1.6; /* 设置行高，提升可读性 */
+            font-family: '宋体', 'SimSun', sans-serif;  /* 设置字体为宋体 */
+            max-width: 85%;  /* 限制文字区域宽度，确保不会拉伸过大 */
+            margin-bottom: 0px; /* 给文字区域底部留出空间 */
+            max-height: 60vh;  /* 限制文字区域的最大高度，避免超出屏幕 */
+            text-indent: 2em;  /* 设置首行缩进，2em可以根据需求调整 */
+        }
+
+        .highlight1 {
+            background-color: #fd8200;  /* 设置背景颜色 */
+            border-radius: 5px;  /* 圆角效果 */
+            padding: 0 4px;  /* 内边距，确保文字有适当的高亮条 */
+            font-weight: bold;  /* 加粗字体 */
+        }
+
+        .highlight2 {
+            background-color: #ffcb29;  /* 设置背景颜色，另一个颜色 */
+            border-radius: 5px;  /* 圆角效果 */
+            padding: 0 4px;  /* 内边距，确保文字有适当的高亮条 */
+            font-weight: bold;  /* 加粗字体 */
+        }
+
+
+        .chart-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 0px;
+        }
+
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .left-button, .right-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100px;
+            height: 100px;
+            background-image: url('button.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+            transition: transform 0.3s ease;
+        }
+
+        .left-button {
+            left: 20px;
+        }
+
+        .right-button {
+            right: 20px;
+        }
+
+        .left-button:hover, .right-button:hover {
+            transform: scale(1.1);
+        }
+
+        .left-button::after, .right-button::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 15px;
+            color: #565656;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .left-button:hover::after, .right-button:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .axis path,
+        .axis line {
+            stroke: #ff8e35; /* 改变坐标轴颜色 */
+        }
+
+        .axis text {
+            fill: #8b1710; /* 改变坐标轴文字颜色 */
+            font-size: 14px; /* 调整字体大小 */
+        }
+
+    </style>
+</head>
+<body>
+   
+    <div class="text-content">
+        我们在哔哩哔哩（bilibili）视频网站上，通过搜索关键词“春晚预测”、“春晚押题”、“春晚预测小品”，爬取了总共673条相关视频，经过人工清洗数据后，删除了与主题不相关的视频，共保留<span class="highlight1">651条</span>视频的标题以及发表时间（爬取时间截至为2025-1-19）。
+        我们依照视频的发表时间，以年为单位制作柱状图表。可以发现，相关预测视频自2021年起数量<span class="highlight2">逐年增长</span>，2025年数据由于提前截至，与其他年份相比数量较少。可以发现，春晚预测主题越来越受到视频创作者们的欢迎，也有越来越多视频涌现在视频网络平台。
+    </div>
+    
+    <!-- 图表容器 -->
+    <div class="chart-container">
+        <svg id="chart"></svg>
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <!-- 左侧跳转按钮 -->
+    <button class="left-button" data-tooltip="上一页" onclick="window.location.href='2.html'"></button>
+
+    <!-- 右侧跳转按钮 -->
+    <button class="right-button" data-tooltip="下一页" onclick="window.location.href='4.html'"></button>
+
+    <script>
+        // 图表尺寸设置
+        const margin = { top: 20, right: 30, bottom: 100, left: 30 };
+        const width = 800 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+        const svg = d3.select("#chart")
+            .attr("width", width + margin.left + margin.right +90)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left + (margin.right / 2)},${margin.top + (margin.bottom / 2)})`);
+
+
+        const tooltip = d3.select("#tooltip");
+
+        // 初始化比例尺
+        const xScale = d3.scaleBand().range([0, width]).padding(0.1);
+        const yScale = d3.scaleLinear().range([height, 0]);
+
+        // 定义颜色比例尺，根据频次范围分配颜色
+        const colorScale = d3.scaleThreshold()
+            .domain([50, 100, 150, 200]) // 定义频次区间
+            .range(["#fff545", "#efc100", "#fd8200", "#f93b1c", "#b31513"]); // 定义颜色
+        
+        // 定义图例数据
+        const legendData = [
+            { label: "0-50", color: "#fff545" },
+            { label: "50-100", color: "#efc100" },
+            { label: "100-150", color: "#fd8200" },
+            { label: "150-200", color: "#f93b1c" },
+            { label: "200+", color: "#b31513" },
+        ];
+
+        // 添加图例
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(${width + 20}, 20)`); // 图例靠近图表右侧但不超出
+
+        legend.selectAll("rect")
+            .data(legendData)
+            .join("rect")
+            .attr("x", 0)
+            .attr("y", (d, i) => i * 25) // 每个图例项的间距
+            .attr("width", 20)
+            .attr("height", 20)
+            .attr("fill", d => d.color);
+
+        legend.selectAll("text")
+            .data(legendData)
+            .join("text")
+            .attr("x", 30)
+            .attr("y", (d, i) => i * 25 + 15) // 与矩形对齐
+            .text(d => d.label)
+            .style("font-size", "14px")
+            .style("fill", "#8b1710"); // 图例文字颜色
+
+
+        // 读取 CSV 文件
+        d3.csv("data/bilibili_videos_cleaned.csv").then(data => {
+            data.forEach(d => {
+                d.Date = new Date(d.Date); // 转换为日期对象
+            });
+
+            // 按年份分组
+            const groupedData = d3.rollups(
+                data,
+                v => ({ count: v.length }), // 按年份统计总频次
+                d => d.Date.getFullYear()
+            ).sort((a, b) => a[0] - b[0]); // 按年份排序
+
+            // 初始化比例尺的域
+            xScale.domain(groupedData.map(d => d[0]));
+            yScale.domain([0, d3.max(groupedData, d => d[1].count)]);
+
+            // 绘制 x 轴
+            svg.append("g")
+                .attr("class", "axis x-axis") // 添加类名
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(xScale).tickFormat(d => `${d}年`))
+                .selectAll("text")
+                .attr("transform", "rotate(-45)")
+                .style("text-anchor", "end");
+
+            // 绘制 y 轴
+            svg.append("g")
+                .attr("class", "axis y-axis") // 添加类名
+                .call(d3.axisLeft(yScale));
+
+            // 绘制柱状图
+            svg.selectAll(".bar")
+                .data(groupedData)
+                .join("rect")
+                .attr("class", "bar")
+                .attr("x", d => xScale(d[0]))
+                .attr("y", height) // 初始位置在底部
+                .attr("width", xScale.bandwidth())
+                .attr("height", 0) // 初始高度为 0
+                .attr("fill", d => colorScale(d[1].count)) // 根据频次分配颜色
+                .transition() // 动画过渡
+                .duration(800) // 动画持续时间
+                .delay((d, i) => i * 100) // 每个柱子延迟显示
+                .attr("y", d => yScale(d[1].count))
+                .attr("height", d => height - yScale(d[1].count))
+                .attr("fill", d => colorScale(d[1].count)) // 根据频次分配颜色
+                .on("mouseover", function (event, d) {
+                    d3.select(this).attr("fill", "orange");
+                    tooltip
+                        .style("visibility", "visible")
+                        .style("opacity", 1)
+                        .style("left", `${event.pageX + 10}px`)
+                        .style("top", `${event.pageY - 10}px`)
+                        .html(`
+                            <strong>年份：</strong>${d[0]}<br>
+                            <strong>频次：</strong>${d[1].count}
+                        `);
+                })
+                .on("mousemove", function (event) {
+                    tooltip
+                        .style("left", `${event.pageX + 10}px`)
+                        .style("top", `${event.pageY - 10}px`);
+                })
+                .on("mouseout", function () {
+                    d3.select(this).attr("fill", d => colorScale(d[1].count));
+                    tooltip
+                        .style("visibility", "hidden")
+                        .style("opacity", 0);
+                });
+            
+        });
+    </script>
+</body>
+</html>

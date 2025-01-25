@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分工</title>
+    <link rel="icon" href="favicon.ico">
+    <style>
+        body {
+            font-size: 1.2rem;
+            margin: 0;
+            padding: 0;
+            background-image: url('background.png'); /* 背景图片 */
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+            text-align: center; /* 使文本居中 */
+            color: black; /* 设置字体颜色为黑色 */
+            padding: 20px;
+        }
+
+        .highlight-title {
+            background-color: #fd8200; /* 设置背景颜色 */
+            color: white; /* 设置字体颜色 */
+            font-size: 2.5rem; /* 设置字体大小 */
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 5px; /* 圆角效果 */
+            margin-bottom: 30px; /* 设置底部空白 */
+            font-family: '宋体', 'SimSun', sans-serif;
+        }
+
+        .text-content {
+            font-size: 1.8rem;
+            line-height: 1.2;
+            font-family: '宋体', 'SimSun', sans-serif;
+            max-width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background: none; /* 去掉背景色 */
+            margin-bottom: 10px;
+            text-align: justify;
+            font-weight: bold;
+        }
+
+        .highlight {
+            background-color: #df4f3f; /* 高亮颜色 */
+            border-radius: 10px;
+            padding: 0 10px;
+            font-weight: bold;
+        }
+
+        /* 按钮样式 */
+        .left-button, .right-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100px;
+            height: 100px;
+            background-image: url('button.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+            transition: transform 0.3s ease;
+        }
+
+        .left-button {
+            left: 20px;
+        }
+
+        .right-button {
+            right: 20px;
+        }
+
+        .left-button:hover, .right-button:hover {
+            transform: scale(1.1);
+        }
+
+        .left-button::after, .right-button::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 15px;
+            color: #565656;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .left-button:hover::after, .right-button:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 结语标题 -->
+    <div class="highlight-title">
+        分工
+    </div>
+
+    <!-- 结语内容 -->
+    <div class="text-content">
+        框架构思 王泓力，曹盈，肖中山
+        <br><br>
+
+        前期资料查找及搜集整理 曹盈，肖中山
+
+        <br><br>
+
+        数据爬取 王泓力
+
+        <br><br>
+
+        文案撰写 曹盈，肖中山，王泓力
+
+        <br><br> 
+
+        图表及网页制作 王泓力
+
+        <br><br>
+
+        图文及整体美工制作 曹盈，肖中山
+
+    </div>
+
+    <!-- 左侧跳转按钮 -->
+    <button class="left-button" data-tooltip="上一页" onclick="window.location.href='12.html'"></button>
+
+    <!-- 右侧跳转按钮 -->
+    <button class="right-button" data-tooltip="下一页" onclick="window.location.href='14.html'"></button>
+
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第五页</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="icon" href="favicon.ico">
+    <style>
+        body {
+            font-size: 1.2rem;
+            margin: 0;
+            padding: 0;
+            background-image: url('background.png');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;  /* 确保内容从顶部开始 */
+            flex-direction: column;
+            position: relative;
+            gap: 20px;
+            padding-top: 20px; /* 留出顶部空白 */
+            width: 100%;  /* 确保 body 占满整个页面宽度 */
+        }
+
+        .text-content {
+            font-size: 1.8rem;
+            padding-left: 100px;
+            padding-right: 100px;
+            line-height: 1.6;
+            font-family: '宋体', 'SimSun', sans-serif;
+            max-width: 85%;
+            margin-bottom: 0px;
+            max-height: 60vh;
+            text-indent: 2em;
+            width: 100%;  /* 确保文本区域宽度占满 */
+        }
+
+        /* 视频容器 */
+        .video-container {
+            width: 80%;  /* 设置容器的宽度 */
+            height: 60%;
+            position: relative;
+            display: flex;
+            justify-content: center;  /* 水平居中 */
+            align-items: center;  /* 垂直居中 */
+            margin: 0 auto;  /* 强制居中 */
+            margin-top: 20px;  /* 调整此值让视频位置更靠下 */
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .highlight {
+            background-color: #b31513;  /* 设置背景颜色 */
+            border-radius: 5px;  /* 圆角效果 */
+            padding: 0 0px;  /* 内边距，确保文字有适当的高亮条 */
+            font-weight: bold;  /* 加粗字体 */
+        }
+
+        .barrage-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* 确保弹幕不会超出容器 */
+            pointer-events: auto; /* 允许鼠标干扰视频操作 */
+        }
+
+        .barrage {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            animation: moveLeft 5s linear infinite; /* 默认弹幕动画时间为 5 秒 */
+            pointer-events: auto;
+        }
+
+        @keyframes moveLeft {
+            from {
+                transform: translateX(100%); /* 确保从容器的右侧完全出现 */
+            }
+            to {
+                transform: translateX(-600%); /* 移动到容器的左侧完全消失 */
+            }
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10; /* 确保提示框在最上层 */
+        }
+
+        .barrage:hover {
+            cursor: pointer;
+        }
+
+
+        .left-button, .right-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100px;
+            height: 100px;
+            background-image: url('button.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+            transition: transform 0.3s ease;
+        }
+
+        .left-button {
+            left: 20px;
+        }
+
+        .right-button {
+            right: 20px;
+        }
+
+        .left-button:hover, .right-button:hover {
+            transform: scale(1.1);
+        }
+
+        .left-button::after, .right-button::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 15px;
+            color: #565656;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .left-button:hover::after, .right-button:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="text-content">
+        由于对全部视频做出分析所需处理的数据量较大，且视频质量参差不齐，我们从所有的视频中人工选择了<span class="highlight">16条</span>播放量高、观众互动多、内容代表性强的视频，爬取了这16条视频的所有弹幕。
+    </div>
+    
+    <!-- 左侧跳转按钮 -->
+    <button class="left-button" data-tooltip="上一页" onclick="window.location.href='4.html'"></button>
+
+    <!-- 右侧跳转按钮 -->
+    <button class="right-button" data-tooltip="下一页" onclick="window.location.href='6.html'"></button>
+
+    <!-- 视频和弹幕容器 -->
+    <div class="video-container">
+        <video autoplay muted loop controls>
+            <source src="bili-video.mp4" type="video/mp4">
+            您的浏览器不支持视频播放。
+        </video>
+        <div class="barrage-container" id="barrageContainer"></div>
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <script>
+        // 读取 CSV 文件并生成弹幕
+        d3.csv("data/全部弹幕.csv").then(data => {
+            const barrageContainer = document.getElementById("barrageContainer");
+            const tooltip = document.getElementById("tooltip");
+
+            // 获取弹幕内容和视频名称列
+            const comments = data.map(d => ({
+                content: d["弹幕内容"],
+                videoName: d["视频名称"]
+            }));
+
+            let index = 0;
+
+            // 每隔一段时间生成弹幕
+            setInterval(() => {
+                if (comments.length === 0) return; // 如果没有弹幕内容，直接返回
+
+                const randomIndex = Math.floor(Math.random() * comments.length); // 随机索引
+                const comment = comments[randomIndex];
+                createBarrage(comment, barrageContainer);
+            }, 500); // 每隔 1 秒生成一条弹幕
+
+
+            // 创建弹幕元素
+            function createBarrage(comment, container) {
+                const barrage = document.createElement("div");
+                barrage.className = "barrage";
+                barrage.style.top = `${Math.random() * 80}%`; // 随机纵向位置
+                barrage.style.left = "100%"; // 确保从右侧开始
+                barrage.style.color = getRandomColor(); // 随机颜色
+                barrage.style.animationDuration = `10s`; // 设置每条弹幕的动画持续时间为 10 秒
+                barrage.textContent = comment.content;
+
+                // 添加鼠标悬停显示视频名称的事件
+                barrage.addEventListener("mouseover", (event) => {
+                    tooltip.textContent = `视频名称：${comment.videoName}`;
+                    tooltip.style.visibility = "visible";
+                    tooltip.style.opacity = 1;
+                    tooltip.style.left = `${event.pageX + 10}px`; // 调整提示框的位置
+                    tooltip.style.top = `${event.pageY - 10}px`;
+                });
+
+                barrage.addEventListener("mousemove", (event) => {
+                    tooltip.style.left = `${event.pageX - 200}px`;
+                    tooltip.style.top = `${event.pageY - 190}px`;
+                });
+
+                barrage.addEventListener("mouseout", () => {
+                    tooltip.style.visibility = "hidden";
+                    tooltip.style.opacity = 0;
+                });
+
+                container.appendChild(barrage);
+
+                barrage.addEventListener("animationend", () => {
+                    barrage.remove(); // 动画结束后删除弹幕
+                });
+            }
+
+            // 生成随机颜色
+            function getRandomColor() {
+                const colors = ["#fff545", "#efc100", "#fd8200", "#f93b1c", "#b31513"];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+        });
+
+    </script>
+</body>
+</html>

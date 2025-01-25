@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第十二页</title>
+    <script src="wordcloud2.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="icon" href="favicon.ico">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('12.png'); /* 背景图更改为12.png */
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            position: relative;
+        }
+
+        .content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 80%; /* 确保内容区占用大部分空间 */
+        }
+
+        .left-button, .right-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100px;
+            height: 100px;
+            background-image: url('button.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+            transition: transform 0.3s ease;
+        }
+
+        .left-button {
+            left: 20px;
+        }
+
+        .right-button {
+            right: 20px;
+        }
+
+        .left-button:hover, .right-button:hover {
+            transform: scale(1.1);
+        }
+
+        .left-button::after, .right-button::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 15px;
+            color: #565656;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .left-button:hover::after, .right-button:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 左侧跳转按钮 -->
+    <button class="left-button" data-tooltip="上一页" onclick="window.location.href='11.html'"></button>
+
+    <!-- 右侧跳转按钮 -->
+    <button class="right-button" data-tooltip="下一页" onclick="window.location.href='13.html'"></button>
+
+
+</body>
+</html>

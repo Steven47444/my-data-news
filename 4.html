@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第四页 </title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="icon" href="favicon.ico">
+    <style>
+        body {
+            font-size: 1.2rem; /* 使用rem单位，避免像素放大影响页面布局 */
+            margin: 0;
+            padding: 0;
+            background-image: url('background.png');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            flex-direction: column;
+            position: relative;
+            gap: 10px;
+            padding-top: 20px; /* 留出顶部空白 */
+        }
+
+        .text-content {
+            font-size: 1.8rem; /* 设置文字的字体大小，可以根据需要调整 */
+            padding-left: 100px;  /* 设置左右页边距 */
+            padding-right: 100px;
+            line-height: 1.6; /* 设置行高，提升可读性 */
+            font-family: '宋体', 'SimSun', sans-serif;  /* 设置字体为宋体 */
+            max-width: 85%;  /* 限制文字区域宽度，确保不会拉伸过大 */
+            margin-bottom: 0px; /* 给文字区域底部留出空间 */
+            max-height: 60vh;  /* 限制文字区域的最大高度，避免超出屏幕 */
+            text-indent: 2em;  /* 设置首行缩进，2em可以根据需求调整 */
+        }
+
+        .highlight {
+            background-color: #fff545;  /* 设置背景颜色 */
+            border-radius: 5px;  /* 圆角效果 */
+            padding: 0 0px;  /* 内边距，确保文字有适当的高亮条 */
+            font-weight: bold;  /* 加粗字体 */
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .axis path,
+        .axis line {
+            stroke: #ff8e35; /* 改变坐标轴颜色 */
+        }
+
+        .axis text {
+            fill: #8b1710; /* 改变坐标轴文字颜色 */
+            font-size: 14px; /* 调整字体大小 */
+        }
+        .left-button, .right-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100px;
+            height: 100px;
+            background-image: url('button.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+            transition: transform 0.3s ease;
+        }
+
+        .left-button {
+            left: 20px;
+        }
+
+        .right-button {
+            right: 20px;
+        }
+
+        .left-button:hover, .right-button:hover {
+            transform: scale(1.1);
+        }
+
+        .left-button::after, .right-button::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 15px;
+            color: #565656;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .left-button:hover::after, .right-button:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="text-content">
+        我们进一步将数据的单位细分为周，并重新绘制了一个折线图。从图中可以很明显地发现，视频的发布量大多在春节前几周激增，尤其是在<span class="highlight">临近春节的最后一周</span>，相关视频的数量呈现出爆发式增长。这一现象反映了视频创作者们对于春晚主题的高度关注，尤其是在春节前夕，观众和创作者都希望通过这些预测视频增加节日氛围和娱乐性，迎接新一年的到来。
+    </div>
+
+    <!-- 图表容器 -->
+    <div class="chart-container">
+        <svg id="chart"></svg>
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <!-- 左侧跳转按钮 -->
+    <button class="left-button" data-tooltip="上一页" onclick="window.location.href='3.html'"></button>
+
+    <!-- 右侧跳转按钮 -->
+    <button class="right-button" data-tooltip="下一页" onclick="window.location.href='5.html'"></button>
+
+    <script>
+        // 图表尺寸设置
+        const margin = { top: 20, right: 30, bottom: 100, left: 30 };
+        const width = 800 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+        const svg = d3.select("#chart")
+            .attr("width", width + margin.left + margin.right + 70)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        const tooltip = d3.select("#tooltip");
+
+        // 初始化比例尺
+        const xScale = d3.scaleTime().range([0, width]); // 时间比例尺
+        const yScale = d3.scaleLinear().range([height, 0]);
+
+        // 定义颜色比例尺，根据周频次分配颜色
+        const colorScale = d3.scaleThreshold()
+            .domain([5, 10, 15, 20]) // 周频次范围
+            .range(["#fff545", "#efc100", "#fd8200", "#f93b1c", "#b31513"]);
+
+        // 定义图例数据
+        const legendData = [
+            { label: "0-5", color: "#fff545" },
+            { label: "5-10", color: "#efc100" },
+            { label: "10-15", color: "#fd8200" },
+            { label: "15-20", color: "#f93b1c" },
+            { label: "20+", color: "#b31513" },
+        ];
+
+        // 添加图例
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(${width + 20}, 20)`); // 图例在图表右侧
+
+        legend.selectAll("rect")
+            .data(legendData)
+            .join("rect")
+            .attr("x", 0)
+            .attr("y", (d, i) => i * 25) // 每个图例项的间距
+            .attr("width", 20)
+            .attr("height", 20)
+            .attr("fill", d => d.color);
+
+        legend.selectAll("text")
+            .data(legendData)
+            .join("text")
+            .attr("x", 30)
+            .attr("y", (d, i) => i * 25 + 15) // 与矩形对齐
+            .text(d => d.label)
+            .style("font-size", "14px")
+            .style("fill", "#8b1710"); // 图例文字颜色
+
+        // 读取 CSV 文件
+        d3.csv("data/bilibili_videos_cleaned.csv").then(data => {
+            data.forEach(d => {
+                d.Date = new Date(d.Date); // 转换为日期对象
+                d.Week = d3.timeWeek.floor(d.Date); // 转换为所在周的起始日期
+            });
+
+            // 按周分组统计频次
+            const groupedData = d3.rollups(
+                data,
+                v => v.length, // 每周的频次
+                d => d.Week
+            ).sort((a, b) => a[0] - b[0]); // 按周排序
+
+            // 初始化比例尺的域
+            xScale.domain(d3.extent(groupedData, d => d[0])); // 横轴范围为最早和最晚的周
+            yScale.domain([0, d3.max(groupedData, d => d[1])]); // 纵轴为最大频次
+
+            // 绘制 x 轴
+            svg.append("g")
+                .attr("class", "axis x-axis")
+                .attr("transform", `translate(0, ${height})`)
+                .call(d3.axisBottom(xScale).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y"))) // 按年份标注
+                .selectAll("text")
+                .attr("transform", "rotate(-45)")
+                .style("text-anchor", "end");
+
+            // 绘制 y 轴
+            svg.append("g")
+                .attr("class", "axis y-axis")
+                .call(d3.axisLeft(yScale).ticks(5)); // 刻度数量为 5
+
+            // 折线生成器
+            const line = d3.line()
+                .x(d => xScale(d[0])) // 周的日期作为横轴坐标
+                .y(d => yScale(d[1])) // 每周频次作为纵轴坐标
+                .curve(d3.curveMonotoneX); // 平滑曲线
+
+            // 绘制折线
+            svg.append("path")
+                .datum(groupedData)
+                .attr("fill", "none")
+                .attr("stroke", "#fd8200")
+                .attr("stroke-width", 2)
+                .attr("d", line)
+                .attr("stroke-dasharray", function() { return this.getTotalLength(); }) // 计算折线总长度
+                .attr("stroke-dashoffset", function() { return this.getTotalLength(); }) // 初始隐藏
+                .transition()
+                .duration(1000) // 动画持续时间
+                .ease(d3.easeLinear)
+                .attr("stroke-dashoffset", 0); // 动态绘制折线
+
+
+            // 添加点
+            svg.selectAll(".point")
+                .data(groupedData)
+                .join("circle")
+                .attr("class", "point")
+                .attr("cx", d => xScale(d[0]))
+                .attr("cy", d => yScale(d[1]))
+                .attr("r", 0) // 初始大小为 0，用于动画
+                .attr("fill", d => colorScale(d[1]))
+                .on("mouseover", function (event, d) {
+                    d3.select(this).attr("r", 8); // 鼠标悬停时放大点
+                    tooltip
+                        .style("visibility", "visible")
+                        .style("opacity", 1)
+                        .style("left", `${event.pageX + 10}px`)
+                        .style("top", `${event.pageY - 10}px`)
+                        .html(`
+                            <strong>周起始日期：</strong>${d3.timeFormat("%Y-%m-%d")(d[0])}<br>
+                            <strong>频次：</strong>${d[1]}
+                        `);
+                })
+                .on("mousemove", function (event) {
+                    tooltip
+                        .style("left", `${event.pageX + 10}px`)
+                        .style("top", `${event.pageY - 10}px`);
+                })
+                .on("mouseout", function () {
+                    d3.select(this).attr("r", 5); // 恢复原始大小
+                    tooltip
+                        .style("visibility", "hidden")
+                        .style("opacity", 0);
+                })
+                .transition()
+                .duration(200) // 动画持续时间
+                .delay((d, i) => i * 100) // 延迟显示
+                .attr("r", 5); // 最终点的大小
+
+        });
+    </script>
+</body>
+</html>
