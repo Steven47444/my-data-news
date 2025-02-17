@@ -194,23 +194,37 @@
             .style("font-size", "14px")
             .style("fill", "#8b1710"); // 图例文字颜色
 
-            // 读取 CSV 文件
-            d3.csv("https://steven47444.github.io/my-data-news/bilibili_videos_cleaned.csv").then(data => {
-                data.forEach(d => {
-                    d.Date = new Date(d.Date); // 转换为日期对象
-                    d.Week = d3.timeWeek.floor(d.Date); // 转换为所在周的起始日期
-                });
-
-            // 按周分组统计频次
+            // 读取 CSV 文件（保持与 `3.html` 一致）
+            d3.csv("bilibili_videos_cleaned.csv").then(data => {
+            console.log("Raw Data:", data); // 调试
+    
+            // 解析日期并处理数据
+            const parseDate = d3.timeParse("%Y-%m-%d");
+            data.forEach(d => {
+                d.Date = parseDate(d.Date);
+                if (!d.Date) console.warn("Invalid Date:", d); // 检查无效数据
+                d.Week = d.Date ? d3.timeWeek.floor(d.Date) : null;
+            });
+    
+            // 过滤无效数据
+            data = data.filter(d => d.Week !== null);
+            console.log("Processed Data:", data);
+    
+            // 统计每周频次
             const groupedData = d3.rollups(
                 data,
-                v => v.length, // 每周的频次
+                v => v.length,
                 d => d.Week
-            ).sort((a, b) => a[0] - b[0]); // 按周排序
-
-            // 初始化比例尺的域
-            xScale.domain(d3.extent(groupedData, d => d[0])); // 横轴范围为最早和最晚的周
-            yScale.domain([0, d3.max(groupedData, d => d[1])]); // 纵轴为最大频次
+            ).sort((a, b) => a[0] - b[0]); // 按时间排序
+    
+            console.log("Grouped Data:", groupedData);
+    
+            // 计算 x 轴和 y 轴范围
+            const xDomain = groupedData.length > 0 ? d3.extent(groupedData, d => d[0]) : [new Date(), new Date()];
+            const yMax = groupedData.length > 0 ? d3.max(groupedData, d => d[1]) : 1;
+    
+            xScale.domain(xDomain);
+            yScale.domain([0, yMax]);
 
             // 绘制 x 轴
             svg.append("g")
