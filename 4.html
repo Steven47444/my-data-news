@@ -194,12 +194,12 @@
             .style("font-size", "14px")
             .style("fill", "#8b1710"); // 图例文字颜色
 
-        // 读取 CSV 文件
-        d3.csv("data/bilibili_videos_cleaned.csv").then(data => {
-            data.forEach(d => {
-                d.Date = new Date(d.Date); // 转换为日期对象
-                d.Week = d3.timeWeek.floor(d.Date); // 转换为所在周的起始日期
-            });
+            // 读取 CSV 文件
+            d3.csv("https://steven47444.github.io/my-data-news/data/bilibili_videos_cleaned.csv").then(data => {
+                data.forEach(d => {
+                    d.Date = new Date(d.Date); // 转换为日期对象
+                    d.Week = d3.timeWeek.floor(d.Date); // 转换为所在周的起始日期
+                });
 
             // 按周分组统计频次
             const groupedData = d3.rollups(
