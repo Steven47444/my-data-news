@@ -37,13 +37,20 @@
             top: 50%;
             transform: translateY(-50%);
             background-color: transparent; /* 确保背景透明 */
-            transition: transform 0.3s ease; /* 添加放大效果 */
+            animation: scaleAnimation 2s infinite ease-in-out; /* 添加持续动画 */
         }
 
-        /* 鼠标悬停时放大效果 */
-        .right-button:hover {
-            transform: translateY(-50%) scale(1.1); /* 放大按钮 */
-            box-shadow: none; /* 无阴影 */
+        /* 动态放大缩小效果 */
+        @keyframes scaleAnimation {
+            0% {
+                transform: translateY(-50%) scale(1);
+            }
+            50% {
+                transform: translateY(-50%) scale(1.2); /* 最大放大 */
+            }
+            100% {
+                transform: translateY(-50%) scale(1); /* 恢复原大小 */
+            }
         }
 
         /* 提示文本样式 */
