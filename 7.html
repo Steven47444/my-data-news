@@ -184,10 +184,11 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script>
-        d3.csv("分类结果.csv").then(data => {
-            // 提取前100个词并按主题分类
+        d3.csv("https://steven47444.github.io/my-data-news/分类结果.csv").then(data => {
+            console.log("CSV Data Loaded:", data); // 调试数据格式
+    
             const top100Words = data.slice(0, 100);
-
+    
             // 主题与颜色对应关系
             const topicColors = {
                 "情感与互动": "#ffcb29",
