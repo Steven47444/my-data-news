@@ -149,24 +149,22 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script>
-        d3.csv("词频统计.csv").then(data => {
-            // 筛选词频大于 20 的词，并生成前 100 个词的词云数据
+        d3.csv("https://steven47444.github.io/my-data-news/词频统计.csv").then(data => {
+            console.log("CSV Data Loaded:", data); // 调试数据格式
+    
             const wordData = data
-                .filter(d => d["词"] && +d["频次"] > 20) // 筛选频次大于 20
-                .sort((a, b) => +b["频次"] - +a["频次"]) // 按频次降序排序
-                .slice(0, 100) // 只保留前 100 个词
+                .filter(d => d["词"] && +d["频次"] > 20)
+                .sort((a, b) => +b["频次"] - +a["频次"])
+                .slice(0, 100)
                 .map(d => [d["词"], +d["频次"]]);
-
-            console.log('加载的词频数据:', wordData);
-
-            // 保存到 localStorage 中
-            localStorage.setItem('wordData', JSON.stringify(wordData));
-
+    
+            console.log('词云数据:', wordData); // 确保数据正确
+    
             if (!wordData.length) {
                 console.error('词频数据为空，请检查 CSV 文件内容。');
                 return;
             }
-
+    
             const tooltip = document.getElementById('tooltip');
             let index = 0; // 初始化 index
 
