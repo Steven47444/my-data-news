@@ -184,25 +184,31 @@
     <script>
         // 读取 CSV 文件并生成弹幕
         d3.csv("全部弹幕.csv").then(data => {
+            console.log("CSV Data Loaded:", data); // 检查是否成功加载数据
+        
             const barrageContainer = document.getElementById("barrageContainer");
+            console.log("Barrage Container:", barrageContainer);
+        
             const tooltip = document.getElementById("tooltip");
-
-            // 获取弹幕内容和视频名称列
+        
             const comments = data.map(d => ({
                 content: d["弹幕内容"],
                 videoName: d["视频名称"]
             }));
-
+        
+            console.log("Parsed Comments:", comments); // 检查解析的弹幕内容
+        
             let index = 0;
-
-            // 每隔一段时间生成弹幕
             setInterval(() => {
-                if (comments.length === 0) return; // 如果没有弹幕内容，直接返回
-
-                const randomIndex = Math.floor(Math.random() * comments.length); // 随机索引
+                if (comments.length === 0) return;
+                const randomIndex = Math.floor(Math.random() * comments.length);
                 const comment = comments[randomIndex];
                 createBarrage(comment, barrageContainer);
-            }, 500); // 每隔 1 秒生成一条弹幕
+            }, 1000);
+        }).catch(error => {
+            console.error("Error loading CSV file:", error);
+        });
+
 
 
             // 创建弹幕元素
