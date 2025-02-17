@@ -112,7 +112,6 @@
             cursor: pointer;
         }
 
-
         .left-button, .right-button {
             position: absolute;
             top: 50%;
@@ -209,51 +208,47 @@
             console.error("Error loading CSV file:", error);
         });
 
+        // 创建弹幕元素
+        function createBarrage(comment, container) {
+            const barrage = document.createElement("div");
+            barrage.className = "barrage";
+            barrage.style.top = `${Math.random() * 80}%`; // 随机纵向位置
+            barrage.style.left = "100%"; // 确保从右侧开始
+            barrage.style.color = getRandomColor(); // 随机颜色
+            barrage.style.animationDuration = `10s`; // 设置每条弹幕的动画持续时间为 10 秒
+            barrage.textContent = comment.content;
 
+            // 添加鼠标悬停显示视频名称的事件
+            barrage.addEventListener("mouseover", (event) => {
+                tooltip.textContent = `视频名称：${comment.videoName}`;
+                tooltip.style.visibility = "visible";
+                tooltip.style.opacity = 1;
+                tooltip.style.left = `${event.pageX + 10}px`; // 调整提示框的位置
+                tooltip.style.top = `${event.pageY - 10}px`;
+            });
 
-            // 创建弹幕元素
-            function createBarrage(comment, container) {
-                const barrage = document.createElement("div");
-                barrage.className = "barrage";
-                barrage.style.top = `${Math.random() * 80}%`; // 随机纵向位置
-                barrage.style.left = "100%"; // 确保从右侧开始
-                barrage.style.color = getRandomColor(); // 随机颜色
-                barrage.style.animationDuration = `10s`; // 设置每条弹幕的动画持续时间为 10 秒
-                barrage.textContent = comment.content;
+            barrage.addEventListener("mousemove", (event) => {
+                tooltip.style.left = `${event.pageX - 200}px`;
+                tooltip.style.top = `${event.pageY - 190}px`;
+            });
 
-                // 添加鼠标悬停显示视频名称的事件
-                barrage.addEventListener("mouseover", (event) => {
-                    tooltip.textContent = `视频名称：${comment.videoName}`;
-                    tooltip.style.visibility = "visible";
-                    tooltip.style.opacity = 1;
-                    tooltip.style.left = `${event.pageX + 10}px`; // 调整提示框的位置
-                    tooltip.style.top = `${event.pageY - 10}px`;
-                });
+            barrage.addEventListener("mouseout", () => {
+                tooltip.style.visibility = "hidden";
+                tooltip.style.opacity = 0;
+            });
 
-                barrage.addEventListener("mousemove", (event) => {
-                    tooltip.style.left = `${event.pageX - 200}px`;
-                    tooltip.style.top = `${event.pageY - 190}px`;
-                });
+            container.appendChild(barrage);
 
-                barrage.addEventListener("mouseout", () => {
-                    tooltip.style.visibility = "hidden";
-                    tooltip.style.opacity = 0;
-                });
+            barrage.addEventListener("animationend", () => {
+                barrage.remove(); // 动画结束后删除弹幕
+            });
+        }
 
-                container.appendChild(barrage);
-
-                barrage.addEventListener("animationend", () => {
-                    barrage.remove(); // 动画结束后删除弹幕
-                });
-            }
-
-            // 生成随机颜色
-            function getRandomColor() {
-                const colors = ["#fff545", "#efc100", "#fd8200", "#f93b1c", "#b31513"];
-                return colors[Math.floor(Math.random() * colors.length)];
-            }
-        });
-
+        // 生成随机颜色
+        function getRandomColor() {
+            const colors = ["#fff545", "#efc100", "#fd8200", "#f93b1c", "#b31513"];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
     </script>
 </body>
 </html>
