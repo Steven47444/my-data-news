@@ -149,7 +149,7 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script>
-        d3.csv("data/词频统计.csv").then(data => {
+        d3.csv("词频统计.csv").then(data => {
             // 筛选词频大于 20 的词，并生成前 100 个词的词云数据
             const wordData = data
                 .filter(d => d["词"] && +d["频次"] > 20) // 筛选频次大于 20
